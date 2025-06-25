@@ -1,7 +1,9 @@
 <?php
 
 // Implement the RESTful API endpoints for translation units.
-
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header('Content-Type: application/json');
 
 require_once '../src/TranslationUnitManager.php';
