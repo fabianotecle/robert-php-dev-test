@@ -1,79 +1,82 @@
 <?php
 
-// Implement the RESTful API endpoints for translation units.
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
 
-require_once '../src/TranslationUnitManager.php';
+require_once __DIR__ . '/../src/TranslationUnitManager.php';
 
 $manager = new TranslationUnitManager();
 
-// Capture the HTTP method
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Helper function to send JSON response with HTTP status code
-function respond($data, $status = 200) {
-    http_response_code($status);
-    echo json_encode($data);
+if ($method === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-// Parse JSON input for POST and PUT requests
-$input = json_decode(file_get_contents('php://input'), true);
-
 switch ($method) {
     case 'GET':
-        // If ID is provided, return the specific translation unit
         if (isset($_GET['id'])) {
-            $unit = $manager->getUnit((int) $_GET['id']);
+            $unit = $manager->getUnit((int)$_GET['id']);
             if ($unit) {
-                respond($unit);
+                // Convert object TranslationUnit para array simples pra JSON
+                echo json_encode([
+                    'id' => $unit->id,
+                    'source_text' => $unit->sourceText,
+                    'translated_text' => $unit->translatedText,
+                    'language_from' => $unit->languageFrom,
+                    'language_to' => $unit->languageTo
+                ]);
             } else {
-                respond(['error' => 'Translation unit not found'], 404);
+                http_response_code(404);
+                echo json_encode(['error' => 'Translation not found']);
             }
         } else {
-            // ID parameter missing
-            respond(['error' => 'Missing id parameter'], 400);
+            $units = $manager->getAllAsArray();
+            echo json_encode($units);
         }
         break;
 
     case 'POST':
-        // Check required parameters for creating a translation unit
-        if (isset($input['source_text'], $input['translated_text'], $input['language_from'], $input['language_to'])) {
-            $id = $manager->addUnit(
-                $input['source_text'],
-                $input['translated_text'],
-                $input['language_from'],
-                $input['language_to']
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (
+            isset($data['source_text'], $data['translated_text'], $data['language_from'], $data['language_to']) &&
+            !empty($data['source_text']) && !empty($data['translated_text'])
+        ) {
+            $newId = $manager->addUnit(
+                $data['source_text'],
+                $data['translated_text'],
+                $data['language_from'],
+                $data['language_to']
             );
-            respond(['message' => 'Translation unit created', 'id' => $id], 201);
+            http_response_code(201);
+            echo json_encode(['message' => 'Translation created', 'id' => $newId]);
         } else {
-            respond(['error' => 'Missing parameters for creation'], 400);
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid input']);
         }
         break;
 
     case 'PUT':
-        // Check required parameters for updating a translation unit
-        if (isset($input['id'], $input['translated_text'])) {
-            $success = $manager->updateUnit((int) $input['id'], $input['translated_text']);
-            if ($success) {
-                respond(['message' => 'Translation unit updated']);
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (isset($data['id'], $data['source_text'], $data['translated_text']) && !empty($data['source_text']) && !empty($data['translated_text'])) {
+            $updated = $manager->updateUnit((int)$data['id'], $data['source_text'], $data['translated_text']);
+            if ($updated) {
+                echo json_encode(['message' => 'Translation updated']);
             } else {
-                respond(['error' => 'Translation unit not found'], 404);
+                http_response_code(404);
+                echo json_encode(['error' => 'Translation not found']);
             }
         } else {
-            respond(['error' => 'Missing parameters for update'], 400);
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid input']);
         }
         break;
 
-    case 'DELETE':
-        // Delete method not implemented yet
-        respond(['error' => 'Delete method not implemented'], 501);
-        break;
-
     default:
-        // HTTP method not allowed
-        respond(['error' => 'Method not allowed'], 405);
+        http_response_code(405);
+        echo json_encode(['error' => 'Method Not Allowed']);
+        break;
 }

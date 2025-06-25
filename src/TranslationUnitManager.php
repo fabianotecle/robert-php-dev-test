@@ -1,44 +1,69 @@
 <?php
 
+require_once '../src/db.php';
 require_once 'TranslationUnit.php';
 
 class TranslationUnitManager
 {
-    private array $units = [];
-    private array $history = [];
-    private int $nextId = 1;
+    private PDO $pdo;
+
+    public function __construct()
+    {
+        $this->pdo = DB::connect();;
+    }
 
     public function addUnit(string $source, string $translated, string $from, string $to): int
     {
-        $unit = new TranslationUnit($this->nextId, $source, $translated, $from, $to);
-        $this->units[$unit->id] = $unit;
-        return $this->nextId++;
+        $stmt = $this->pdo->prepare("INSERT INTO translations (source_text, translated_text, language_from, language_to) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$source, $translated, $from, $to]);
+        return $this->pdo->lastInsertId();
     }
 
     public function getUnit(int $id): ?TranslationUnit
     {
-        return $this->units[$id] ?? null;
+        $stmt = $this->pdo->prepare("SELECT * FROM translations WHERE id = ?");
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(!$row) return null;
+
+        return new TranslationUnit(
+            $row['id'],
+            $row['source_text'],
+            $row['translated_text'],
+            $row['language_from'],
+            $row['language_to']
+        );
     }
 
-    public function updateUnit(int $id, string $newTranslation): bool
+    public function updateUnit(int $id, string $newSourceText, string $newTranslation): bool
     {
-        if (!isset($this->units[$id])) {
-            return false;
+        $stmt = $this->pdo->prepare("UPDATE translations SET source_text = ?, translated_text = ?, updated_at = NOW() WHERE id = ?");
+        return $stmt->execute([$newSourceText, $newTranslation, $id]);
+    }
+
+    public function getAll(): array
+    {
+        $stmt = $this->pdo->query("SELECT * FROM translations ORDER BY id DESC LIMIT 10");
+        $results = [];
+
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[] = new TranslationUnit(
+                $row['id'],
+                $row['source_text'],
+                $row['translated_text'],
+                $row['language_from'],
+                $row['language_to']
+            );
         }
 
-        $this->history[] = [
-            'translation_unit_id' => $id,
-            'old_translated_text' => $this->units[$id]->translatedText,
-            'updated_at' => date('Y-m-d H:i:s')
-        ];
-
-        $this->units[$id]->updateTranslation($newTranslation);
-
-        return true;
+        return $results;
     }
 
-    public function getHistory(): array
+    // Extra: retorna os dados como array para API JSON
+    public function getAllAsArray(): array
     {
-        return $this->history;
+        $stmt = $this->pdo->query("SELECT * FROM translations ORDER BY id DESC LIMIT 10");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

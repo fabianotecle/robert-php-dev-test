@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const TranslationForm = ({ onSubmit, initialData }) => {
   const [form, setForm] = useState(
@@ -9,6 +9,19 @@ const TranslationForm = ({ onSubmit, initialData }) => {
       language_to: 'pt'
     }
   );
+
+  useEffect(() => {
+    if (initialData) {
+      setForm(initialData);
+    } else {
+      setForm({
+        source_text: '',
+        translated_text: '',
+        language_from: 'en',
+        language_to: 'pt'
+      });
+    }
+  }, [initialData]);
 
   const handleChange = e =>
     setForm({ ...form, [e.target.name]: e.target.value });

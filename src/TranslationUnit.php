@@ -7,23 +7,25 @@ class TranslationUnit
     public string $translatedText;
     public string $languageFrom;
     public string $languageTo;
-    public string $createdAt;
-    public string $updatedAt;
+    public ?string $createdAt;
+    public ?string $updatedAt;
 
     public function __construct(
         int $id,
         string $sourceText,
         string $translatedText,
         string $languageFrom,
-        string $languageTo
+        string $languageTo,
+        ?string $createdAt = null,
+        ?string $updatedAt = null
     ) {
         $this->id = $id;
         $this->sourceText = $sourceText;
         $this->translatedText = $translatedText;
         $this->languageFrom = $languageFrom;
         $this->languageTo = $languageTo;
-        $this->createdAt = date('Y-m-d H:i:s');
-        $this->updatedAt = date('Y-m-d H:i:s');
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
     public function updateTranslation(string $newTranslation): void
