@@ -1,7 +1,7 @@
 <?php
 
-require_once '../src/db.php';
-require_once 'TranslationUnit.php';
+require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/TranslationUnit.php';
 
 class TranslationUnitManager
 {
