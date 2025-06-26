@@ -19,9 +19,14 @@ if ($method === 'OPTIONS') {
 switch ($method) {
     case 'GET':
         if (isset($_GET['id'])) {
+            if(isset($_GET['history'])) {
+                $unitId = (int) $_GET['id'];
+                echo json_encode($manager->getHistoryByUnitId($unitId));
+                exit;
+            }
+
             $unit = $manager->getUnit((int)$_GET['id']);
             if ($unit) {
-                // Convert object TranslationUnit para array simples pra JSON
                 echo json_encode([
                     'id' => $unit->id,
                     'source_text' => $unit->sourceText,

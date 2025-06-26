@@ -10,10 +10,13 @@ CREATE TABLE translation_units (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
-CREATE TABLE translation_unit_versions (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    translation_unit_id INT NOT NULL,
-    old_translated_text TEXT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (translation_unit_id) REFERENCES translation_units(id) ON DELETE CASCADE
+CREATE TABLE translation_history (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  translation_unit_id INT NOT NULL,
+  old_source_text TEXT NOT NULL,
+  new_source_text TEXT NOT NULL,
+  old_translated_text TEXT NOT NULL,
+  new_translated_text TEXT NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (translation_unit_id) REFERENCES translations(id) ON DELETE CASCADE
 );
