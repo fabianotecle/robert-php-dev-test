@@ -6,7 +6,6 @@ function App() {
   const [translations, setTranslations] = useState([]);
   const [editing, setEditing] = useState(null);
 
-  // Busca as traduções da API
   const fetchTranslations = async () => {
     try {
       const res = await fetch('http://localhost/robert-php-dev-test/api/translations.php');
@@ -22,7 +21,6 @@ function App() {
     fetchTranslations();
   }, []);
 
-  // Função que envia o formulário para criar ou atualizar
   const handleFormSubmit = async (formData) => {
     try {
       const method = editing ? 'PUT' : 'POST';
@@ -37,14 +35,13 @@ function App() {
 
       if (!res.ok) throw new Error('Failed to submit');
 
-      await fetchTranslations(); // Atualiza a lista depois do envio
-      setEditing(null); // Limpa o estado de edição para voltar ao modo criar
+      await fetchTranslations();
+      setEditing(null);
     } catch (error) {
       console.error('Error submitting form:', error);
     }
   };
 
-  // Passa para a lista a função que ativa a edição
   return (
     <div>
       <TranslationForm onSubmit={handleFormSubmit} initialData={editing} />

@@ -55,5 +55,8 @@ Whenever a translation is updated:
 #### `translation_unit_versions`
 - `id`: Unique identifier
 - `translation_unit_id`: Reference to the original translation
+- `old_source_text`: Previous source content
+- `new_source_text`: New source content
 - `old_translated_text`: Previous translated content
+- `new_translated_text`: New translated content
 - `updated_at`: Timestamp of the change
