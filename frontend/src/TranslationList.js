@@ -1,23 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
-const TranslationList = ({ onEdit }) => {
-  const [units, setUnits] = useState([]);
+const TranslationList = ({ translations, onEdit }) => {
   const [history, setHistory] = useState({});
   const [openHistoryId, setOpenHistoryId] = useState(null);
-
-  useEffect(() => {
-    const fetchUnits = async () => {
-      try {
-        const res = await fetch('http://localhost/robert-php-dev-test/api/translations.php');
-        if (!res.ok) throw new Error('Network response was not ok');
-        const data = await res.json();
-        setUnits(data);
-      } catch (error) {
-        console.error('Failed to fetch translations:', error);
-      }
-    };
-    fetchUnits();
-  }, []);
 
   const toggleHistory = async (id) => {
     if (openHistoryId === id) {
@@ -38,7 +23,7 @@ const TranslationList = ({ onEdit }) => {
   return (
     <div>
       <h3>Translations</h3>
-      {units.map((unit) => (
+      {translations.map((unit) => (
         <div key={unit.id} style={{ border: '1px solid #ccc', padding: 10, margin: 5 }}>
           <p><strong>{unit.language_from} ➜ {unit.language_to}</strong></p>
           <p>Source: {unit.source_text}</p>
